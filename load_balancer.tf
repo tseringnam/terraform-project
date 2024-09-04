@@ -1,25 +1,63 @@
-# Create the first Target Group for Images
-resource "aws_lb_target_group" "images_tg" {
-  name     = "images-target-group"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.my_vpc.id
-
-  health_check {
-    path                = "/health"
-    interval            = 30
-    timeout             = 5
-    healthy_threshold   = 3
-    unhealthy_threshold = 2
-    matcher             = "200"
+# Launch Configuration for Videos instances
+resource "aws_launch_configuration" "videos_lc" {
+  name          = "videos-launch-configuration"
+  image_id      = "ami-066784287e358dad1"  # Replace with a valid AMI ID
+  instance_type = "t2.micro"
+  associate_public_ip_address = true
+  lifecycle {
+    create_before_destroy = true
   }
 
-  tags = {
-    Name = "images-tg"
+  security_groups = [aws_security_group.my_security_group.id]  # Add your security group IDs here
+
+  user_data = <<-EOF
+              #!/bin/bash
+              echo "Starting Videos Instance"
+
+                # Install Apache
+                sudo yum update -y
+                sudo yum install -y httpd
+
+                # Start Apache and enable it to start on boot
+                sudo systemctl start httpd
+                sudo systemctl enable httpd
+
+                # Create a simple HTML file
+                echo "<html><body><h1>Welcome to Video Instace </h1></body></html>" > /var/www/html/index.html
+                sudo  mkdir  /var/www/html/videos/
+                sudo  cp /var/www/html/index.html  /var/www/html/videos/
+
+              # Add your custom setup scripts here
+                sudo amazon-linux-extras install epel -y
+                sudo yum install stress -y
+                stress --cpu 1 --timeout 30000
+                yum install -y htop
+              EOF
+
+  key_name = "my-key"  # Replace with your key pair name
+}
+
+
+# Auto Scaling Group for Videos
+resource "aws_autoscaling_group" "videos_asg" {
+  launch_configuration = aws_launch_configuration.videos_lc.id
+  min_size             = 1
+  max_size             = 3
+  desired_capacity     = 1
+  vpc_zone_identifier  = [
+    aws_subnet.public_subnet_1.id,
+    aws_subnet.public_subnet_2.id
+  ]
+  target_group_arns = [aws_lb_target_group.videos_tg.arn]
+  
+  tag {
+    key                 = "Name"
+    value               = "Videos Instance"
+    propagate_at_launch = true
   }
 }
 
-# Create the second Target Group for Videos
+# Create the  ALB Target Group for Videos
 resource "aws_lb_target_group" "videos_tg" {
   name     = "videos-target-group"
   port     = 80
@@ -27,11 +65,11 @@ resource "aws_lb_target_group" "videos_tg" {
   vpc_id   = aws_vpc.my_vpc.id
 
   health_check {
-    path                = "/health"
+    path                = "/"
     interval            = 30
     timeout             = 5
     healthy_threshold   = 3
-    unhealthy_threshold = 2
+    unhealthy_threshold = 3
     matcher             = "200"
   }
 
@@ -39,6 +77,7 @@ resource "aws_lb_target_group" "videos_tg" {
     Name = "videos-tg"
   }
 }
+
 
 # Create an Application Load Balancer
 resource "aws_lb" "my_alb" {
@@ -58,7 +97,7 @@ resource "aws_lb" "my_alb" {
   }
 }
 
-# Create a listener for the Application Load Balancer
+# Create a default listener for the Application Load Balancer
 resource "aws_lb_listener" "http_listener" {
   load_balancer_arn = aws_lb.my_alb.arn
   port              = "80"
@@ -68,27 +107,16 @@ resource "aws_lb_listener" "http_listener" {
     type             = "fixed-response"
     fixed_response {
       content_type = "text/plain"
-      message_body = "404: Not Found"
-      status_code  = "404"
+      message_body = "Default  content"
+      status_code  = "200"
     }
   }
 }
 
-# Add rules to route traffic to Images Target Group
-resource "aws_lb_listener_rule" "images_rule" {
-  listener_arn = aws_lb_listener.http_listener.arn
-  priority     = 10
-
-  action {
-    type               = "forward"
-    target_group_arn   = aws_lb_target_group.images_tg.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/images/*"]
-    }
-  }
+# Autoscaling target group Attachement
+resource "aws_autoscaling_attachment" "test1" {
+  autoscaling_group_name = aws_autoscaling_group.videos_asg.id
+  lb_target_group_arn    = aws_lb_target_group.videos_tg.arn
 }
 
 # Add rules to route traffic to Videos Target Group
@@ -107,6 +135,9 @@ resource "aws_lb_listener_rule" "videos_rule" {
     }
   }
 }
+
+
+
 
 # Launch Configuration for Images instances
 resource "aws_launch_configuration" "images_lc" {
@@ -133,36 +164,14 @@ resource "aws_launch_configuration" "images_lc" {
                 sudo systemctl enable httpd
 
                 # Create a simple HTML file
-                echo "<html><body><h1>Images Instance</h1></body></html>" > /var/www/html/index.html
+                echo "<html><body><h1>Welcome to Image Instance</h1></body></html>" > /var/www/html/index.html
+                sudo  mkdir  /var/www/html/images/
+                sudo  cp /var/www/html/index.html  /var/www/html/images/
               EOF
 
   key_name = "my-key"  # Replace with your key pair name
 }
 
-# Launch Configuration for Videos instances
-resource "aws_launch_configuration" "videos_lc" {
-  name          = "videos-launch-configuration"
-  image_id      = "ami-066784287e358dad1"  # Replace with a valid AMI ID
-  instance_type = "t2.micro"
-  associate_public_ip_address = true
-  lifecycle {
-    create_before_destroy = true
-  }
-
-  security_groups = [aws_security_group.my_security_group.id]  # Add your security group IDs here
-
-  user_data = <<-EOF
-              #!/bin/bash
-              echo "Starting Videos Instance"
-              # Add your custom setup scripts here
-              sudo amazon-linux-extras install epel -y
-              sudo yum install stress -y
-              stress --cpu 1 --timeout 30000
-              #yum install -y htop
-              EOF
-
-  key_name = "my-key"  # Replace with your key pair name
-}
 
 # Auto Scaling Group for Images
 resource "aws_autoscaling_group" "images_asg" {
@@ -183,24 +192,54 @@ resource "aws_autoscaling_group" "images_asg" {
   }
 }
 
-# Auto Scaling Group for Videos
-resource "aws_autoscaling_group" "videos_asg" {
-  launch_configuration = aws_launch_configuration.videos_lc.id
-  min_size             = 1
-  max_size             = 3
-  desired_capacity     = 1
-  vpc_zone_identifier  = [
-    aws_subnet.public_subnet_1.id,
-    aws_subnet.public_subnet_2.id
-  ]
-  target_group_arns = [aws_lb_target_group.videos_tg.arn]
-  
-  tag {
-    key                 = "Name"
-    value               = "Videos Instance"
-    propagate_at_launch = true
+# Create the ALB  Target Group for Images
+resource "aws_lb_target_group" "images_tg" {
+  name     = "images-target-group"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.my_vpc.id
+
+  health_check {
+    path                = "/"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    matcher             = "200"
+  }
+
+  tags = {
+    Name = "images-tg"
   }
 }
+
+
+# Autoscaling target group Attachement for Image
+resource "aws_autoscaling_attachment" "test2" {
+  autoscaling_group_name = aws_autoscaling_group.images_asg.id
+  lb_target_group_arn    = aws_lb_target_group.images_tg.arn
+}
+
+# Add rules to route traffic to Images Target Group
+resource "aws_lb_listener_rule" "images_rule" {
+  listener_arn = aws_lb_listener.http_listener.arn
+  priority     = 10
+
+  action {
+    type               = "forward"
+    target_group_arn   = aws_lb_target_group.images_tg.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/images/*"]
+    }
+  }
+}
+
+
+
+
 
 # CloudWatch Alarm for Videos Auto Scaling Group
 resource "aws_cloudwatch_metric_alarm" "videos_cpu_high" {
@@ -211,8 +250,8 @@ resource "aws_cloudwatch_metric_alarm" "videos_cpu_high" {
   namespace                 = "AWS/EC2"
   period                    = 60
   statistic                 = "Average"
-  threshold                 = 75
-  alarm_description         = "Triggers scaling up when CPU utilization exceeds 75%"
+  threshold                 = 50
+  alarm_description         = "Triggers scaling up when CPU utilization exceeds 50%"
 
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.videos_asg.name
@@ -249,9 +288,15 @@ resource "aws_autoscaling_policy" "videos_scale_up" {
 }
 
 resource "aws_autoscaling_policy" "videos_scale_down" {
+
   name                   = "videos-scale-down"
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
   autoscaling_group_name = aws_autoscaling_group.videos_asg.name
 }
+
+  #sudo  mkdir  /var/www/html/images/
+#  sudo  cp /var/www/html/index.html  /var/www/html/images/
+#    71  sudo  cat   /var/www/html/images/
+#    72  sudo  ls  /var/www/html/images/
