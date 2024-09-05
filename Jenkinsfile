@@ -32,28 +32,28 @@ pipeline {
             }
         }
 
-        // stage('Wait Before Destroy') { 
-        //     steps { 
-        //         script {
-        //             input message: 'Do you want to proceed with applying the Terraform destroy?', ok: 'Apply'
-        //         }
-        //     } 
+        stage('Wait Before Destroy') { 
+            steps { 
+                script {
+                    input message: 'Do you want to proceed with applying the Terraform destroy?', ok: 'Apply'
+                }
+            } 
+        }
+
+        // stage('Debug Workspace') {
+        //     steps {
+        //         // Print environment variables and workspace content
+        //         sh 'env'
+        //         sh 'ls -l ${WORKSPACE}'
+        //     }
         // }
 
-        stage('Debug Workspace') {
-            steps {
-                // Print environment variables and workspace content
-                sh 'env'
-                sh 'ls -l ${WORKSPACE}'
-            }
-        }
-
-        stage('Run Python Script') {
-            steps {
-                // Run the Python script
-                sh 'python3  ${WORKSPACE}/my-script.py' 
-            }
-        }
+        // stage('Run Python Script') {
+        //     steps {
+        //         // Run the Python script
+        //         sh 'python3  ${WORKSPACE}/my-script.py' 
+        //     }
+        // }
     
         stage('Terraform Destroy') { 
             steps {
@@ -63,10 +63,10 @@ pipeline {
         }
     }
 
-    // post {
-    //     always {
-    //         cleanWs()
-    //     }
-    // }
+    post {
+        always {
+            cleanWs()
+        }
+    }
 }
 
