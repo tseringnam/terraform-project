@@ -40,6 +40,14 @@ pipeline {
         //     } 
         // }
 
+        stage('Debug Workspace') {
+            steps {
+                // Print environment variables and workspace content
+                sh 'env'
+                sh 'ls -l ${WORKSPACE}'
+            }
+        }
+
         stage('Run Python Script') {
             steps {
                 // Run the Python script
