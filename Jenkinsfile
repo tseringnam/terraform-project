@@ -43,7 +43,7 @@ pipeline {
         stage('Run Python Script') {
             steps {
                 // Run the Python script
-                sh 'python my-script.py' 
+                sh 'python3  ${WORKSPACE}/my-script.py' 
             }
         }
     
