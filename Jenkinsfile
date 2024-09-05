@@ -31,12 +31,19 @@ pipeline {
             }
         }
 
-        stage('Wait Before Destroy') { 
-            steps { 
-                script {
-                    input message: 'Do you want to proceed with applying the Terraform destroy?', ok: 'Apply'
-                }
-            } 
+        // stage('Wait Before Destroy') { 
+        //     steps { 
+        //         script {
+        //             input message: 'Do you want to proceed with applying the Terraform destroy?', ok: 'Apply'
+        //         }
+        //     } 
+        // }
+
+        stage('Run Python Script') {
+            steps {
+                // Run the Python script
+                sh 'python my-script.py' 
+            }
         }
     
         stage('Terraform Destroy') { 
