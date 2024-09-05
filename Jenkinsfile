@@ -19,18 +19,18 @@ pipeline {
             }
         }
         
-        stage('Plan') {
-            steps {
-                sh 'terraform plan -input=false -out=tfplan'
-            }
-        }
+        // stage('Plan') {
+        //     steps {
+        //         sh 'terraform plan -input=false -out=tfplan'
+        //     }
+        // }
         
-        stage('Apply') {
-            steps {
-                 echo "this is apply terraform"
-                //sh 'terraform apply -input=false tfplan'
-            }
-        }
+        // stage('Apply') {
+        //     steps {
+        //          echo "this is apply terraform"
+        //         //sh 'terraform apply -input=false tfplan'
+        //     }
+        // }
 
         stage('Wait Before Destroy') { 
             steps { 
@@ -40,41 +40,37 @@ pipeline {
             } 
         }
 
-        // stage('Input Message') {
-        //     steps {
-        //         script {
-        //             // Prompt for user input in Jenkins
-        //             def userInput = input(
-        //                 id: 'userInput', 
-        //                 message: 'Enter the message for the Python script:', 
-        //                 parameters: [
-        //                     string(name: 'MESSAGE', defaultValue: 'Cyber Knights', description: 'Message to pass to the Python script')
-        //                 ]
-        //             )
+        stage('Input Message') {
+            steps {
+                script {
+                    // Prompt for user input in Jenkins
+                    def userInput = input(
+                        id: 'userInput', 
+                        message: 'Enter the message for the Python script:', 
+                        parameters: [
+                            string(name: 'MESSAGE', defaultValue: 'Cyber Knights', description: 'Message to pass to the Python script')
+                        ]
+                    )
 
-        //             // Print the user input for debugging
-        //             echo "User input: ${userInput.MESSAGE}"
+                    // Print the user input for debugging
+                    echo "User input: ${userInput.MESSAGE}"
 
-        //             // Run Python script with the user input
-        //             sh "python3 my-script.py '${userInput.MESSAGE}'"
-        //         }
-        //     }
-        // }
-        // stage('Debug Workspace') {
-        //     steps {
-        //         // Print environment variables and workspace content
-        //         sh 'env'
-        //         sh 'ls -l ${WORKSPACE}'
-        //     }
-        // }
+                  // Run Python script with the user input
+                    def scripStatus= sh(script: "python3 my-script.py '${userInput.MESSAGE}'",returnStatus: true)
+                      if (scriptStatus != 0) {
+                        // If the Python script fails, handle the error
+                           error "Python script failed with exit code ${scriptStatus}. Exiting the pipeline."
+                    } else {
+                        // Proceed to the next stage if the script succeeds
+                        echo "Python script succeeded."
+        
+                }
+             }
+        }
 
-        // stage('Run Python Script') {
-        //     steps {
-        //         // Run the Python script
-        //         sh 'python3  ${WORKSPACE}/my-script.py' 
-        //     }
-        // }
-    
+
+
+        
         // stage('Terraform Destroy') { 
         //     steps {
         //          echo "this is destroy terraform"
