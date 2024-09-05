@@ -1,7 +1,7 @@
 import sys
 
 # Define your predefined values
-PREDEFINED_VALUES = ['value1']
+PREDEFINED_VALUES = ['Cyber Knights']
 
 def main():
 
