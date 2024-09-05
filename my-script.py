@@ -1,37 +1,16 @@
-# def prompt_for_input(expected_message):
-#     # Prompt the user for input
-#     user_input = input("Enter the input message to continue: ")
-    
-#     # Check if the user input matches the expected message
-#     if user_input == "cyberknights":
-#         print("Input matched. Continuing the pipeline...")
-#         return True
-#     else:
-#         print("Input did not match. Stopping the pipeline.")
-#         return False
+import sys
 
-# # Main pipeline execution
-# def main():
-#     expected_message = "continue"  # Define the expected message to match
-#     if prompt_for_input(expected_message):
-#         # Continue with the rest of the pipeline
-#         print("Executing the next step of the pipeline...")
-#         # Add your pipeline code here
-#     else:
-#         # Handle the case where the input doesn't match
-#         print("Pipeline halted.")
-
-# if __name__ == "__main__":
-#     main()
-
+# Define your predefined values
+PREDEFINED_VALUES = ['value1']
 
 def main():
-    # Prompt the user for input
-    user_input = input("Enter a message to proceed: ")
-    
-    # Process the input
-    print(f"Received message: {user_input}")
+
+    if message not in PREDEFINED_VALUES:
+        print(f"Error: '{message}' is not a valid value. Expected one of {PREDEFINED_VALUES}.")
+        sys.exit(1)  # Exit with code 1 to indicate failure
+    else:
+        print(f"Received valid message: {message}")
+        sys.exit(0)  # Exit with code 0 to indicate success
 
 if __name__ == "__main__":
     main()
-
