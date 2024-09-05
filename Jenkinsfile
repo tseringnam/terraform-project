@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git(branch: "main", credentialsId: "b167ad00-4d65-44b7-8e59-f018ad1f05db", url: "https://github.com/tseringnam/terraform-project.git")
+                git(branch: "main", credentialsId: "55d8f489-c67a-4275-a145-b10f4fa90ab6", url: "https://github.com/tseringnam/terraform-project.git")
             }
         }
         
