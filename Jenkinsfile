@@ -27,7 +27,8 @@ pipeline {
         
         stage('Apply') {
             steps {
-                sh 'terraform apply -input=false tfplan'
+                 echo "this is apply terraform"
+                #sh 'terraform apply -input=false tfplan'
             }
         }
 
@@ -48,7 +49,8 @@ pipeline {
     
         stage('Terraform Destroy') { 
             steps {
-                sh 'terraform destroy -auto-approve -input=false'
+                 echo "this is destroy terraform"
+                #sh 'terraform destroy -auto-approve -input=false'
             }  
         }
     }
