@@ -44,7 +44,7 @@ pipeline {
                  sh 'terraform destroy -auto-approve -input=false'
             }  
         }
-    
+    }
 
     post {
         always {
