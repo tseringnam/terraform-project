@@ -48,7 +48,7 @@ pipeline {
                         id: 'userInput', 
                         message: 'Enter the message for the Python script:', 
                         parameters: [
-                            string(name: 'MESSAGE', defaultValue: 'Hello, World!', description: 'Message to pass to the Python script')
+                            string(name: 'MESSAGE', defaultValue: 'Cyber Knights', description: 'Message to pass to the Python script')
                         ]
                     )
 
