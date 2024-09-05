@@ -38,9 +38,6 @@ pipeline {
                 }
             } 
         }
-
-        
-    }
         
         stage('Terraform Destroy') { 
             steps {
