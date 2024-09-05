@@ -75,12 +75,12 @@ pipeline {
         //     }
         // }
     
-        stage('Terraform Destroy') { 
-            steps {
-                 echo "this is destroy terraform"
-                // sh 'terraform destroy -auto-approve -input=false'
-            }  
-        }
+        // stage('Terraform Destroy') { 
+        //     steps {
+        //          echo "this is destroy terraform"
+        //         // sh 'terraform destroy -auto-approve -input=false'
+        //     }  
+        // }
     }
 
     post {
